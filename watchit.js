@@ -46,21 +46,35 @@ var board = d3.select("svg");
 var main = board.selectAll("rect").data(heroes).enter().append("rect").attr("x",getX).attr("y",getY).attr("height",12).attr("width",12).attr("fill", "white");
 board.on("mousemove",function(e){
   main.attr("x",function(){
-    return d3.mouse(this)[0];
+    return d3.mouse(this)[0]-5;
   });
   main.attr("y",function(){
-    return d3.mouse(this)[1];
+    return d3.mouse(this)[1]-6;
   });
-  console.log(d3.mouse(this))
-  // console.log(this.x)
-  // this.y = d3.mouse(board)[1];
-  // console.log(board)
-})
+  // addEnemies.each(function(d) { if ( ((d.x > main.attr("x")-2) && (d.x < main.attr("x")+2)) && ((d.y > main.attr("y")-2) && (d.y < main.attr("y")+2)) ) { alert('dead'); } });
+  // addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > main.attr("x")-5) && (this.getAttribute("cx") < main.attr("x")+5)) && ((this.getAttribute("cy") > main.attr("y")-5) && (this.getAttribute("cy") < main.attr("y")+5)) ) { alert('dead'); } });
+  //addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > d3.mouse(this)[0]-10) && (this.getAttribute("cx") < d3.mouse(this)[0]+10)) && ((this.getAttribute("cy") > d3.mouse(this)[1]-10) && (this.getAttribute("cy") < d3.mouse(this)[1]+10)) ) { alert('dead'); } });
+  // addEnemies.each(function(d) { console.log(d3.mouse(this)[0]);  console.log(this.getAttribute("cx"))})
+    // if ((d.x)  === main.x && d.y === main.y) { alert("You accidently the enemy.");} });
+});
 var addEnemies = board.selectAll("circle").data(enemies).enter().append("circle").attr("cx", getX).attr("cy", getY).attr("r", 5).attr("fill", "red");
+
+var checkCollision = function(enemy,collidedCallback) {
+  // var radiusSum =  parseFloat(enemy.getAttribute("r") + 10);
+  // var xDiff = parseFloat(enemy.getAttribute("cx")) - main.attr("x");
+  // var yDiff = parseFloat(enemy.getAttribute("cy")) - main.attr("y");
+  console.log(main.attr("x"))
+  if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
+
+  // var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
+  // if (separation < radiusSum) { collidedCallback(); }
+};
+
+var blah = function(){ console.log("collision"); };
 
 var beginMove = function() {
   setInterval(function() {
-    d3.selectAll("circle").each(function(d){d.move();}).transition().attr("cx",getX).attr("cy",getY).duration(getRandom(500,2000));
+    d3.selectAll("circle").each(function(d){d.move();}).transition().attr("cx",getX).attr("cy",getY).duration(getRandom(500,2000)).tween('custom', function(t){checkCollision(this, blah)});
   }, getRandom(1800,2400));
 };
 beginMove();
