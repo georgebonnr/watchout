@@ -60,21 +60,49 @@ board.on("mousemove",function(e){
 var addEnemies = board.selectAll("circle").data(enemies).enter().append("circle").attr("cx", getX).attr("cy", getY).attr("r", 5).attr("fill", "red");
 
 var checkCollision = function(enemy,collidedCallback) {
-  // var radiusSum =  parseFloat(enemy.getAttribute("r") + 10);
-  // var xDiff = parseFloat(enemy.getAttribute("cx")) - main.attr("x");
-  // var yDiff = parseFloat(enemy.getAttribute("cy")) - main.attr("y");
-  console.log(main.attr("x"))
-  if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
+  var radiusSum =  parseFloat(enemy.attr("r") + 10);
+  var xDiff = parseFloat(enemy.attr("cx")) - parseFloat(main.attr("x"));
+  var yDiff = parseFloat(enemy.attr("cy")) - parseFloat(main.attr("y"));
+  // console.log(main.attr("x"))
+  // if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
 
-  // var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
-  // if (separation < radiusSum) { collidedCallback(); }
+
+  // if ( (parseFloat(enemy.getAttribute("cx")) > parseFloat(main.attr("x"))-20) && (parseFloat(enemy.getAttribute("cx")) < parseFloat(main.attr("x"))+20) && ((parseFloat(enemy.getAttribute("cy")) > parseFloat(main.attr("y"))-20) && (parseFloat(enemy.getAttribute("cy")) < parseFloat(main.attr("y"))+20)) ) { collidedCallback(); }
+
+  var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
+  if (separation < radiusSum) { collidedCallback(); }
 };
 
-var blah = function(){ console.log("collision"); };
+var blah = function(){ alert("collision"); };
 
 var beginMove = function() {
   setInterval(function() {
-    d3.selectAll("circle").each(function(d){d.move();}).transition().attr("cx",getX).attr("cy",getY).duration(getRandom(500,2000)).tween('custom', function(t){checkCollision(this, blah)});
+    d3.selectAll("circle").transition().duration(getRandom(500,2000)).tween('custom', tweenConstructor);
   }, getRandom(1800,2400));
 };
 beginMove();
+
+var tweenConstructor = function(endData) {
+  var enemy = d3.select(this);
+
+  var startPos = {
+    x: parseFloat(enemy.attr('cx')),
+    y: parseFloat(enemy.attr('cy'))
+  };
+  endData.move();
+  var endPos = {
+    x: endData.x,
+    y: endData.y
+  };
+  return function(t) {
+    checkCollision(enemy, blah);
+
+    enemyNextPos = {
+      x: startPos.x + (endPos.x - startPos.x)*t,
+      y: startPos.y + (endPos.y - startPos.y)*t
+    };
+    enemy.attr('cx', enemyNextPos.x).attr('cy', enemyNextPos.y);
+  };
+};
+
+
