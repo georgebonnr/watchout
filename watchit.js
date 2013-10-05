@@ -1,5 +1,6 @@
 // watchit.js
 var tweening = false;
+var dead = false;
 
 var getRandom = function (min, max) {
   return Math.random() * (max - min) + min;
@@ -40,9 +41,6 @@ var getY = function(d) {
   return d.y;
 };
 
-// var svgContainer = d3.select(".board").append("svg").attr("width", 500).attr("height", 500).style("background-color", "black");
-
-// var addEnemies = svgContainer.append("circle").attr("cx", 30).attr("cy", 30).attr("r", 5).attr("fill", "red");
 var board = d3.select("svg");
 var main = board.selectAll("rect").data(heroes).enter().append("rect").attr("x",getX).attr("y",getY).attr("height",12).attr("width",12).attr("fill", "white");
 board.on("mousemove",function(e){
@@ -52,12 +50,7 @@ board.on("mousemove",function(e){
   main.attr("y",function(){
     return d3.mouse(this)[1]-6;
   });
-  if (!tweening) { addEnemies.each(function(d) { checkStaticCollision(d, blah);}); }
-  // addEnemies.each(function(d) { if ( ((d.x > main.attr("x")-2) && (d.x < main.attr("x")+2)) && ((d.y > main.attr("y")-2) && (d.y < main.attr("y")+2)) ) { alert('dead'); } });
-  // addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > main.attr("x")-5) && (this.getAttribute("cx") < main.attr("x")+5)) && ((this.getAttribute("cy") > main.attr("y")-5) && (this.getAttribute("cy") < main.attr("y")+5)) ) { alert('dead'); } });
-  //addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > d3.mouse(this)[0]-10) && (this.getAttribute("cx") < d3.mouse(this)[0]+10)) && ((this.getAttribute("cy") > d3.mouse(this)[1]-10) && (this.getAttribute("cy") < d3.mouse(this)[1]+10)) ) { alert('dead'); } });
-  // addEnemies.each(function(d) { console.log(d3.mouse(this)[0]);  console.log(this.getAttribute("cx"))})
-    // if ((d.x)  === main.x && d.y === main.y) { alert("You accidently the enemy.");} });
+  if (!tweening) { addEnemies.each(function(d) { checkStaticCollision(d, onCollision); }); }
 });
 var addEnemies = board.selectAll("circle").data(enemies).enter().append("circle").attr("cx", getX).attr("cy", getY).attr("r", 5).attr("fill", "red");
 
@@ -73,13 +66,28 @@ var checkCollision = function(enemy,collidedCallback) {
   var radiusSum =  parseFloat(enemy.attr("r")) + 10;
   var xDiff = parseFloat(enemy.attr("cx")) - parseFloat(main.attr("x"));
   var yDiff = parseFloat(enemy.attr("cy")) - parseFloat(main.attr("y"));
-  // if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
-  // if ( (parseFloat(enemy.getAttribute("cx")) > parseFloat(main.attr("x"))-20) && (parseFloat(enemy.getAttribute("cx")) < parseFloat(main.attr("x"))+20) && ((parseFloat(enemy.getAttribute("cy")) > parseFloat(main.attr("y"))-20) && (parseFloat(enemy.getAttribute("cy")) < parseFloat(main.attr("y"))+20)) ) { collidedCallback(); }
   var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
   if (separation < radiusSum) { collidedCallback(); }
 };
 
-var blah = function(){ console.log("collision"); };
+var onCollision = function(){
+  dead = true;
+  setTimeout(function(){dead=false;},20);
+};
+var highScore = document.getElementById("highScore")
+var scoreBoard = document.getElementById("currentScore");
+var score = 0;
+
+setInterval(function(){
+  score++;
+  scoreBoard.innerHTML = score;
+  if (dead) {
+    if (score > highScore.innerHTML) { highScore.innerHTML = score; }
+    score = 0;
+  }
+}, 20);
+
+
 
 var beginMove = function() {
   setInterval(function() {
@@ -102,7 +110,7 @@ var tweenConstructor = function(endData) {
   };
   return function(t) {
 
-    checkCollision(enemy, blah);
+    checkCollision(enemy, onCollision);
 
     enemyNextPos = {
       x: startPos.x + (endPos.x - startPos.x)*t,
