@@ -20,7 +20,7 @@ var Hero = function () {
   hero.x = 250;
   hero.y = 250;
   return hero;
-}
+};
 
 var hero = Hero();
 
@@ -43,7 +43,19 @@ var getY = function(d) {
 
 // var addEnemies = svgContainer.append("circle").attr("cx", 30).attr("cy", 30).attr("r", 5).attr("fill", "red");
 var board = d3.select("svg");
-board.selectAll("rect").data(heroes).enter().append("rect").attr("x",getX).attr("y",getY).attr("height",12).attr("width",12).attr("fill", "white");
+var main = board.selectAll("rect").data(heroes).enter().append("rect").attr("x",getX).attr("y",getY).attr("height",12).attr("width",12).attr("fill", "white");
+board.on("mousemove",function(e){
+  main.attr("x",function(){
+    return d3.mouse(this)[0];
+  });
+  main.attr("y",function(){
+    return d3.mouse(this)[1];
+  });
+  console.log(d3.mouse(this))
+  // console.log(this.x)
+  // this.y = d3.mouse(board)[1];
+  // console.log(board)
+})
 var addEnemies = board.selectAll("circle").data(enemies).enter().append("circle").attr("cx", getX).attr("cy", getY).attr("r", 5).attr("fill", "red");
 
 var beginMove = function() {
