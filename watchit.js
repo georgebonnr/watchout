@@ -1,4 +1,5 @@
 // watchit.js
+var tweening = false;
 
 var getRandom = function (min, max) {
   return Math.random() * (max - min) + min;
@@ -51,6 +52,7 @@ board.on("mousemove",function(e){
   main.attr("y",function(){
     return d3.mouse(this)[1]-6;
   });
+  if (!tweening) { addEnemies.each(function(d) { checkStaticCollision(d, blah);}); }
   // addEnemies.each(function(d) { if ( ((d.x > main.attr("x")-2) && (d.x < main.attr("x")+2)) && ((d.y > main.attr("y")-2) && (d.y < main.attr("y")+2)) ) { alert('dead'); } });
   // addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > main.attr("x")-5) && (this.getAttribute("cx") < main.attr("x")+5)) && ((this.getAttribute("cy") > main.attr("y")-5) && (this.getAttribute("cy") < main.attr("y")+5)) ) { alert('dead'); } });
   //addEnemies.each(function(d) { if ( ((this.getAttribute("cx") > d3.mouse(this)[0]-10) && (this.getAttribute("cx") < d3.mouse(this)[0]+10)) && ((this.getAttribute("cy") > d3.mouse(this)[1]-10) && (this.getAttribute("cy") < d3.mouse(this)[1]+10)) ) { alert('dead'); } });
@@ -59,21 +61,25 @@ board.on("mousemove",function(e){
 });
 var addEnemies = board.selectAll("circle").data(enemies).enter().append("circle").attr("cx", getX).attr("cy", getY).attr("r", 5).attr("fill", "red");
 
-var checkCollision = function(enemy,collidedCallback) {
-  var radiusSum =  parseFloat(enemy.attr("r") + 10);
-  var xDiff = parseFloat(enemy.attr("cx")) - parseFloat(main.attr("x"));
-  var yDiff = parseFloat(enemy.attr("cy")) - parseFloat(main.attr("y"));
-  // console.log(main.attr("x"))
-  // if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
-
-
-  // if ( (parseFloat(enemy.getAttribute("cx")) > parseFloat(main.attr("x"))-20) && (parseFloat(enemy.getAttribute("cx")) < parseFloat(main.attr("x"))+20) && ((parseFloat(enemy.getAttribute("cy")) > parseFloat(main.attr("y"))-20) && (parseFloat(enemy.getAttribute("cy")) < parseFloat(main.attr("y"))+20)) ) { collidedCallback(); }
-
+var checkStaticCollision = function(enemy, collidedCallback) {
+  var radiusSum =  15;
+  var xDiff = enemy.x - parseFloat(main.attr("x"));
+  var yDiff = enemy.y - parseFloat(main.attr("y"));
   var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
   if (separation < radiusSum) { collidedCallback(); }
 };
 
-var blah = function(){ alert("collision"); };
+var checkCollision = function(enemy,collidedCallback) {
+  var radiusSum =  parseFloat(enemy.attr("r")) + 10;
+  var xDiff = parseFloat(enemy.attr("cx")) - parseFloat(main.attr("x"));
+  var yDiff = parseFloat(enemy.attr("cy")) - parseFloat(main.attr("y"));
+  // if (parseFloat(main.attr("x")) === 0) { collidedCallback(); }
+  // if ( (parseFloat(enemy.getAttribute("cx")) > parseFloat(main.attr("x"))-20) && (parseFloat(enemy.getAttribute("cx")) < parseFloat(main.attr("x"))+20) && ((parseFloat(enemy.getAttribute("cy")) > parseFloat(main.attr("y"))-20) && (parseFloat(enemy.getAttribute("cy")) < parseFloat(main.attr("y"))+20)) ) { collidedCallback(); }
+  var separation = Math.sqrt( Math.pow(xDiff,2) + Math.pow(yDiff,2) );
+  if (separation < radiusSum) { collidedCallback(); }
+};
+
+var blah = function(){ console.log("collision"); };
 
 var beginMove = function() {
   setInterval(function() {
@@ -83,8 +89,8 @@ var beginMove = function() {
 beginMove();
 
 var tweenConstructor = function(endData) {
+  tweening = true;
   var enemy = d3.select(this);
-
   var startPos = {
     x: parseFloat(enemy.attr('cx')),
     y: parseFloat(enemy.attr('cy'))
@@ -95,6 +101,7 @@ var tweenConstructor = function(endData) {
     y: endData.y
   };
   return function(t) {
+
     checkCollision(enemy, blah);
 
     enemyNextPos = {
@@ -102,6 +109,11 @@ var tweenConstructor = function(endData) {
       y: startPos.y + (endPos.y - startPos.y)*t
     };
     enemy.attr('cx', enemyNextPos.x).attr('cy', enemyNextPos.y);
+    if (enemyNextPos.x === endPos.x && enemyNextPos.y === endPos.y) {
+      tweening = false;
+      enemy.datum().x = endPos.x;
+      enemy.datum().y = endPos.y;
+    }
   };
 };
 
